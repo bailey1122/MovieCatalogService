@@ -5,6 +5,8 @@ import com.pr.moviecatalogservice.models.CatalogItem;
 import com.pr.moviecatalogservice.models.Movie;
 import com.pr.moviecatalogservice.models.Rating;
 import com.pr.moviecatalogservice.models.UserRating;
+import com.pr.moviecatalogservice.services.MovieInfo;
+import com.pr.moviecatalogservice.services.UserRatingInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,6 +28,12 @@ public class MovieCatalogResource {
 
 //    @Autowired
 //    private WebClient.Builder webClientBuilder;
+
+    @Autowired
+    MovieInfo movieInfo;
+
+    @Autowired
+    UserRatingInfo userRatingInfo;
 
     @RequestMapping("/{userId}")
 //    // the method on the proxy is called first. In the case when the service is down, the
@@ -80,29 +88,29 @@ public class MovieCatalogResource {
 //        );
     }
 
-    @HystrixCommand(fallbackMethod = "getFallbackCatalogItem")
-    private CatalogItem getCatalogItem(Rating rating) {
-        Movie movie = restTemplate.getForObject("http://movie-info-service/movies/" + rating.getMovieId(), Movie.class);
-        return new CatalogItem(movie.getName(), "Desc", rating.getRating());
-    }
+//    @HystrixCommand(fallbackMethod = "getFallbackCatalogItem")
+//    private CatalogItem getCatalogItem(Rating rating) {
+//        Movie movie = restTemplate.getForObject("http://movie-info-service/movies/" + rating.getMovieId(), Movie.class);
+//        return new CatalogItem(movie.getName(), "Desc", rating.getRating());
+//    }
+//
+//    private CatalogItem getFallbackCatalogItem(Rating rating) {
+//        return new CatalogItem("Movie name not found", "", rating.getRating());
+//    }
 
-    private CatalogItem getFallbackCatalogItem(Rating rating) {
-        return new CatalogItem("Movie name not found", "", rating.getRating());
-    }
-
-    @HystrixCommand(fallbackMethod = "getFallbackUserRating")
-    private UserRating getUserRating(@PathVariable("userId") String userId) {
-        return restTemplate.getForObject("http://movie-data-service/ratingsdata/users/" + userId, UserRating.class);
-    }
-
-    private UserRating getFallbackUserRating(@PathVariable("userId") String userId) {
-        UserRating userRating = new UserRating();
-        userRating.setUserId(userId);
-        userRating.setRatings(Arrays.asList(
-                new Rating("0", 0)
-        ));
-        return userRating;
-    }
+//    @HystrixCommand(fallbackMethod = "getFallbackUserRating")
+//    private UserRating getUserRating(@PathVariable("userId") String userId) {
+//        return restTemplate.getForObject("http://movie-data-service/ratingsdata/users/" + userId, UserRating.class);
+//    }
+//
+//    private UserRating getFallbackUserRating(@PathVariable("userId") String userId) {
+//        UserRating userRating = new UserRating();
+//        userRating.setUserId(userId);
+//        userRating.setRatings(Arrays.asList(
+//                new Rating("0", 0)
+//        ));
+//        return userRating;
+//    }
 
     // reduce the possibility of an error when a fallback method executes. Simple hard-coded verison
     public List<CatalogItem> getFallbackCatalog(@PathVariable String userId) {
