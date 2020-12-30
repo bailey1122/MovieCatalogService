@@ -25,8 +25,8 @@ public class MovieCatalogResource {
     @Autowired // consumer (give me something)
     private RestTemplate restTemplate;
 
-    @Autowired
-    private WebClient.Builder webClientBuilder;
+//    @Autowired
+//    private WebClient.Builder webClientBuilder;
 
     @RequestMapping("/{userId}")
     // Hystrix creates a proxy class which is wrapper containing the circuit
@@ -74,14 +74,23 @@ public class MovieCatalogResource {
 //        );
     }
 
+    @HystrixCommand(fallbackMethod = "getFallbackCatalogItem")
     private CatalogItem getCatalogItem(Rating rating) {
         Movie movie = restTemplate.getForObject("http://movie-info-service/movies/" + rating.getMovieId(), Movie.class);
         return new CatalogItem(movie.getName(), "Desc", rating.getRating());
     }
 
+    private CatalogItem getCatalogItem(Rating rating) {
+        
+    }
+
+    @HystrixCommand(fallbackMethod = "getFallbackUserRating")
     private UserRating getUserRating(@PathVariable("userId") String userId) {
         return restTemplate.getForObject("http://movie-data-service/ratingsdata/users/" + userId, UserRating.class);
     }
+
+    private UserRating getFallbackUserRating(@PathVariable("userId") String userId) {
+
 
     // reduce the possibility of an error when a fallback method executes. Simple hard-coded verison
     public List<CatalogItem> getFallbackCatalog(@PathVariable String userId) {
