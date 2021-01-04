@@ -3,10 +3,9 @@ package com.pr.moviecatalogservice.resources;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import com.pr.moviecatalogservice.models.CatalogItem;
 import com.pr.moviecatalogservice.models.Movie;
-import com.pr.moviecatalogservice.models.Rating;
-import com.pr.moviecatalogservice.models.UserRating;
 import com.pr.moviecatalogservice.services.MovieInfo;
 import com.pr.moviecatalogservice.services.UserRatingInfo;
+import com.pr.moviecatalogservice.models.UserRating;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -35,6 +34,21 @@ public class MovieCatalogResource {
     @Autowired
     UserRatingInfo userRatingInfo;
 
+    @RequestMapping("a/{userId}")
+    public Movie getMovie(@PathVariable("userId") String userId) {
+        Movie m = restTemplate.getForObject("http://localhost:8092/movies/" + userId, Movie.class);
+
+        return m;
+    }
+
+    @RequestMapping("m/{userId}")
+    public UserRating getMovie2(@PathVariable("userId") String userId) {
+        UserRating m = restTemplate.getForObject("http://localhost:8093/ratingsdata/users/" + userId, UserRating.class);
+
+        return m;
+    }
+
+
     @RequestMapping("/{userId}")
 //    // the method on the proxy is called first. In the case when the service is down, the
 //    // fallback is called. Hystrix doesn't have an opportunity to intersect two methods that
@@ -58,10 +72,13 @@ public class MovieCatalogResource {
 //        UserRating ratings = restTemplate.getForObject("http://movie-data-service/ratingsdata/users/" + userId, UserRating.class); // a hint. It
 //        // detects a service name, calls Eureka, gets the actual port (host and port), and makes the subsequent call
 
-        UserRating ratings = getUserRating(userId);
+//        UserRating ratings = getUserRating(userId);
+
+        UserRating ratings = userRatingInfo.getUserRating(userId);
 
         // replace each rating with the catalog.
-        return ratings.getRatings().stream().map(rating -> {
+//        return ratings.getRatings().stream().map(rating -> {
+        return ratings.getUserRating().stream().map(rating ->
 //            for every rated movie, take the movie's ID and call the movie information API with that ID
 //            Movie movie = restTemplate.getForObject("http://localhost:8092/movies/" + rating.getMovieId(), Movie.class);
 //            Movie movie = restTemplate.getForObject("http://movie-info-service/movies/" + rating.getMovieId(), Movie.class);
@@ -77,8 +94,8 @@ public class MovieCatalogResource {
 //            // API calls
 //            return new CatalogItem(movie.getName(), "Desc", rating.getRating());
 
-            return getCatalogItem(rating);
-        })
+//            return getCatalogItem(rating);
+            movieInfo.getCatalogItem(rating))
             .collect(Collectors.toList());
 
 
@@ -112,8 +129,8 @@ public class MovieCatalogResource {
 //        return userRating;
 //    }
 
-    // reduce the possibility of an error when a fallback method executes. Simple hard-coded verison
-    public List<CatalogItem> getFallbackCatalog(@PathVariable String userId) {
-        return Arrays.asList(new CatalogItem("No movie", "", 0));
-    }
+//    // reduce the possibility of an error when a fallback method executes. Simple hard-coded verison
+//    public List<CatalogItem> getFallbackCatalog(@PathVariable String userId) {
+//        return Arrays.asList(new CatalogItem("No movie", "", 0));
+//    }
 }
