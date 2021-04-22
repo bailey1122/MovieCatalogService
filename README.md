@@ -1,1 +1,1 @@
-Microservice which communicates with other microservices. Microservices have been created using asyncronous programming, Spring Boot, Spring Cloud, Hystrix, and Eureka. 
+Resilient and fault-tolerant microservice which communicates with other microservices. Microservices have been created using asyncronous programming, a load balancer, Spring Boot, Spring Cloud, Hystrix, and Eureka. The microservices publish and consume using Eureka client.
